@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>원판돌리기</title>
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    background: #f5f6f8;
+    color: #222;
+    min-height: 100vh;
+    padding: 0 0 32px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 검색 UI (장식용) */
+  .search-header {
+    background: #fff;
+    padding: 14px 16px 0;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .search-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .naver-logo-icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    background: #03c75a;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .search-query-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: -0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .search-utils {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .search-util-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #a8a8a8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding: 0;
+  }
+
+  .search-util-btn.search-btn {
+    color: #03c75a;
+    width: 34px;
+    height: 34px;
+  }
+
+  .search-util-btn.search-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .search-divider {
+    height: 2px;
+    background: #03c75a;
+    margin-top: 12px;
+    opacity: 0.35;
+  }
+
+  /* 네비 탭 */
+  .nav-tabs-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px 12px;
+    background: #fff;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .nav-tabs-scroll {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+    padding: 2px 0;
+  }
+
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .nav-pill {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background: #f0f2f5;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+    text-decoration: none;
+    letter-spacing: -0.3px;
+    line-height: 1;
+  }
+
+  .nav-ctrl-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e8e8e8;
+    border-radius: 50%;
+    background: #fff;
+    color: #888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .nav-more-btn {
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+
+  /* 메인 카드 */
+  .main-content {
+    padding: 0;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    margin: 10px 16px 0;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 20px 16px 14px;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: -0.4px;
+  }
+
+  .option-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .option-control label {
+    font-size: 14px;
+    color: #333;
+    margin-right: 4px;
+  }
+
+  .count-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    position: relative;
+    z-index: 2;
+  }
+
+  .count-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .count-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .count-display {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  .count-hint {
+    font-size: 12px;
+    color: #999;
+    margin-left: 4px;
+  }
+
+  /* 게임 영역 */
+  .game-area {
+    background-color: #f2efe9;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.03) 3px,
+      rgba(0,0,0,0.03) 4px
+    );
+    margin: 0 14px 14px;
+    border-radius: 6px;
+    border: 1px solid #e0dbd2;
+    padding: 20px 12px 20px;
+    text-align: center;
+  }
+
+  .game-area.setup {
+    padding-top: 16px;
+  }
+
+  .instruction {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  .status-counter {
+    font-size: 13px;
+    color: #555;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  .status-counter .filled { color: #03c75a; font-weight: 600; }
+
+  .game-area.result .instruction,
+  .game-area.result .status-counter,
+  .game-area.result .btn-confirm { display: none !important; }
+
+  .game-area.setup .wheel-result { display: none; }
+
+  .game-area.setup .action-buttons { display: none; }
+
+  .game-area.result .action-buttons { display: flex; }
+
+  .game-area.setup .pointer {
+    top: -6px;
+    width: 18px;
+    height: 14px;
+    border: none;
+    background: #5c3d2e;
+    border-radius: 2px 2px 4px 4px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  .game-area.result .pointer {
+    top: -2px;
+    width: 0;
+    height: 0;
+    background: none;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 12px solid #e83030;
+    clip-path: none;
+    border-radius: 0;
+  }
+
+  .wheel-result {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 6px;
+    min-height: 30px;
+    letter-spacing: -0.3px;
+  }
+
+  .wheel-result.is-hint {
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+    letter-spacing: -0.2px;
+  }
+
+  .wheel-result:empty {
+    visibility: hidden;
+  }
+
+  .wheel-wrapper {
+    position: relative;
+    width: 88vw;
+    max-width: 280px;
+    margin: 0 auto 16px;
+  }
+
+  .wheel-wrapper::before {
+    content: '';
+    display: block;
+    padding-top: 100%;
+  }
+
+  .pointer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 13;
+    pointer-events: none;
+  }
+
+  .wheel-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: filter 0.2s;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+
+  .wheel-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  .wheel-fallback.hidden {
+    display: none;
+  }
+
+  .js-blocked-banner,
+  .ios-hint {
+    margin: 10px 16px 0;
+    padding: 12px 14px;
+    background: #fff8e6;
+    border: 1px solid #f0d78c;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #7a5a00;
+    text-align: center;
+  }
+
+  .js-blocked-banner strong,
+  .ios-hint strong {
+    color: #5a3e00;
+  }
+
+  .ios-hint.hidden,
+  .js-blocked-banner.hidden {
+    display: none;
+  }
+
+  .wheel-container.spinning { cursor: wait; }
+
+  #wheelCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: none;
+    display: block;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: #222;
+    border-radius: 50%;
+    z-index: 12;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.6);
+  }
+
+  .inputs-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .segment-input-wrap {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    z-index: 11;
+  }
+
+  .segment-input {
+    width: 60px;
+    max-width: 18vw;
+    min-width: 48px;
+    padding: 6px 6px;
+    border: 1px solid #e4e4e4;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 16px;
+    font-weight: 400;
+    text-align: center;
+    outline: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    color: #333;
+    touch-action: manipulation;
+  }
+
+  .segment-input::placeholder {
+    color: #b0b0b0;
+  }
+
+  .segment-input:focus {
+    border-color: #03c75a;
+    box-shadow: 0 0 0 2px rgba(3,199,90,0.15);
+  }
+
+  .inputs-overlay.hidden { display: none; }
+
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 0 4px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: #6d645e;
+    color: #fff;
+    transition: background 0.15s, opacity 0.15s;
+    touch-action: manipulation;
+    min-height: 46px;
+    letter-spacing: -0.2px;
+  }
+
+  .btn:hover { background: #5d5751; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .btn-confirm {
+    display: none;
+    margin: 6px auto 8px;
+    padding: 7px 16px;
+    background: #c36a5a;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    font-size: 13px;
+    min-height: 0;
+    gap: 5px;
+  }
+
+  .btn-confirm.show {
+    display: inline-flex;
+  }
+
+  .btn-confirm:hover { background: #b35f50; }
+
+  .btn-confirm svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 푸터 */
+  .card-footer {
+    padding: 16px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-label {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .footer-select-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .footer-select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    color: #888;
+    pointer-events: none;
+    min-height: 44px;
+  }
+
+  .footer-select-wrap::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-30%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #888;
+    pointer-events: none;
+  }
+
+  .spin-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+
+  /* 가짜 검색 결과 */
+  .fake-posts {
+    padding: 8px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .search-result {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .result-favicon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .result-favicon.green { background: #03c75a; }
+  .result-favicon.blue { background: #4a7fc1; }
+  .result-favicon.orange { background: #f5a060; }
+  .result-favicon.purple { background: #9b7bd4; }
+
+  .result-meta {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: #939393;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+  }
+
+  .result-menu {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #bbb;
+  }
+
+  .result-menu span {
+    width: 3px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 50%;
+  }
+
+  .result-title {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0068c3;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+    text-decoration: none;
+  }
+
+  .result-body {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .result-desc {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #555;
+    letter-spacing: -0.2px;
+  }
+
+  .result-desc strong {
+    font-weight: 700;
+    color: #333;
+  }
+
+  .result-date {
+    color: #939393;
+    font-size: 13px;
+  }
+
+  .result-thumb {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: #f0ebe3;
+    border: 1px solid #e8e0d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .result-thumb svg {
+    width: 56px;
+    height: 56px;
+  }
+
+  .result-tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+    background: #fafafa;
+  }
+
+  @media (max-width: 479px) {
+    .action-buttons .btn {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .count-hint {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 4px;
+    }
+  }
+
+  @media (min-width: 480px) {
+    .search-header { padding: 14px 20px 0; }
+    .nav-tabs-wrap { padding-left: 16px; padding-right: 16px; }
+    .card { margin-left: 20px; margin-right: 20px; }
+    .card-header { padding-left: 20px; padding-right: 20px; }
+    .game-area { margin: 0 18px 16px; padding: 24px 16px 28px; }
+    .wheel-wrapper { width: 80vw; max-width: 320px; }
+    .card-footer { padding: 16px 20px; }
+    .fake-posts { padding-left: 20px; padding-right: 20px; }
+  }
+
+  @media (min-width: 768px) {
+    .search-header,
+    .nav-tabs-wrap,
+    .main-content {
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .card { margin-left: auto; margin-right: auto; }
+  }
+  </style>
+</head>
+<body>
+  <noscript>
+    <p class="js-blocked-banner">
+      ⚠️ JavaScript가 꺼져 있어 원판돌리기가 작동하지 않습니다.<br>
+      <strong>Safari</strong>에서 이 파일을 열어주세요.
+    </p>
+  </noscript>
+  <p class="js-blocked-banner" id="jsBlockedBanner">
+    ⚠️ 상단에 <strong>「완료」</strong>가 보이면 <strong>파일 미리보기</strong>입니다.<br>
+    버튼·입력이 안 됩니다 → <strong>공유(↑)</strong> → <strong>Safari에서 열기</strong>
+  </p>
+  <script>
+    (function () {
+      var b = document.getElementById('jsBlockedBanner');
+      if (b) b.classList.add('hidden');
+    })();
+  </script>
+
+  <!-- 검색 UI (장식) -->
+  <header class="search-header">
+    <div class="search-row">
+      <div class="search-brand">
+        <span class="naver-logo-icon" aria-hidden="true">N</span>
+        <span class="search-query-text">돌림판</span>
+      </div>
+      <div class="search-utils">
+        <button type="button" class="search-util-btn" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <line x1="6" y1="10" x2="6" y2="10" stroke-width="2" stroke-linecap="round"/>
+            <line x1="10" y1="10" x2="10" y2="10" stroke-width="2" stroke-linecap="round"/>
+            <line x1="14" y1="10" x2="14" y2="10" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="10" x2="18" y2="10" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="14" x2="16" y2="14" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button type="button" class="search-util-btn" aria-hidden="true">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M2.5 4.5L6 8L9.5 4.5H2.5Z"/>
+          </svg>
+        </button>
+        <button type="button" class="search-util-btn search-btn" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="search-divider" aria-hidden="true"></div>
+  </header>
+
+  <nav class="nav-tabs-wrap" aria-label="검색 카테고리">
+    <div class="nav-tabs-scroll">
+      <div class="nav-tabs">
+        <a href="#" class="nav-pill">블로그</a>
+        <a href="#" class="nav-pill">카페</a>
+        <a href="#" class="nav-pill">이미지</a>
+        <a href="#" class="nav-pill">클립</a>
+        <a href="#" class="nav-pill">지식iN</a>
+        <a href="#" class="nav-pill">인플루언서</a>
+        <a href="#" class="nav-pill">동영상</a>
+        <a href="#" class="nav-pill">쇼핑</a>
+        <a href="#" class="nav-pill">뉴스</a>
+      </div>
+    </div>
+    <button type="button" class="nav-ctrl-btn" aria-hidden="true">›</button>
+    <button type="button" class="nav-ctrl-btn nav-more-btn" aria-hidden="true">•••</button>
+  </nav>
+
+  <div class="main-content">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">원판돌리기</h1>
+      <div class="option-control">
+        <label for="countDisplay">옵션 개수</label>
+        <button type="button" class="count-btn" id="btnMinus" aria-label="옵션 줄이기">−</button>
+        <span class="count-display" id="countDisplay">6개</span>
+        <button type="button" class="count-btn" id="btnPlus" aria-label="옵션 늘리기">+</button>
+        <span class="count-hint">(2개~8개 설정가능)</span>
+      </div>
+    </div>
+
+    <div class="game-area setup" id="gameArea">
+      <p class="instruction">각 판을 선택하여 옵션 내용을 설정해주세요.</p>
+      <p class="wheel-result" id="wheelResult" aria-live="polite"></p>
+
+      <div class="wheel-wrapper">
+        <div class="pointer" aria-hidden="true"></div>
+        <div class="wheel-container" id="wheelContainer" title="클릭하여 돌리기">
+          <svg class="wheel-fallback" id="wheelFallback" viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="98" fill="#fff" stroke="#5c3d2e" stroke-width="3"/>
+            <path d="M100 100 L100 2 A98 98 0 0 1 184.9 50 Z" fill="#e8b06d"/>
+            <path d="M100 100 L184.9 50 A98 98 0 0 1 184.9 150 Z" fill="#e8a2a2"/>
+            <path d="M100 100 L184.9 150 A98 98 0 0 1 100 198 Z" fill="#b2a2e8"/>
+            <path d="M100 100 L100 198 A98 98 0 0 1 15.1 150 Z" fill="#a2c2e8"/>
+            <path d="M100 100 L15.1 150 A98 98 0 0 1 15.1 50 Z" fill="#b2e8a2"/>
+            <path d="M100 100 L15.1 50 A98 98 0 0 1 100 2 Z" fill="#f4d96f"/>
+            <circle cx="100" cy="100" r="5" fill="#222"/>
+          </svg>
+          <canvas id="wheelCanvas" width="600" height="600"></canvas>
+          <div class="wheel-center"></div>
+          <div class="inputs-overlay" id="inputsOverlay"></div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-confirm" id="btnConfirm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        설정완료
+      </button>
+
+      <p class="status-counter">
+        <span class="filled" id="filledCount">0</span>개 입력중 / 총 <span id="totalCount">6</span>개
+      </p>
+
+      <div class="action-buttons">
+        <button type="button" class="btn" id="btnSpin">다시돌리기</button>
+        <button type="button" class="btn" id="btnReset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 15.5-6.36L21 3v6h-6"/>
+            <path d="M21 12a9 9 0 0 1-15.5 6.36L3 21v-6h6"/>
+          </svg>
+          새 원판
+        </button>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div class="footer-row">
+        <span class="footer-label">다른 게임</span>
+        <div class="footer-select-wrap">
+          <select class="footer-select" disabled aria-label="다른 게임 선택">
+            <option selected>선택하세요</option>
+            <option>가위바위보 게임</option>
+            <option>당첨자 추첨</option>
+            <option>사다리게임</option>
+            <option>주사위 굴리기</option>
+            <option>제비뽑기</option>
+            <option>화살표돌리기</option>
+            <option>간단게임모음</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="fake-posts" aria-label="검색 결과">
+    <article class="search-result">
+      <div class="result-header">
+        <span class="result-favicon green">N</span>
+        <span class="result-meta">원판돌리기 · 원판돌리기.com</span>
+        <span class="result-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>
+      <span class="result-title">룰렛돌리기(원판돌리기)-내가 만든 네이버 <strong>돌림판</strong></span>
+      <p class="result-desc">룰렛 돌리기 네이버 룰렛 원판돌리기 돌려돌려 <strong>돌림판</strong> 게임 바로가기 링크를 찾는 사람들을 위해 만들었습니다. 옵션을 직접 설정하고 원판을 돌려 결과를 확인해보세요.</p>
+    </article>
+
+    <article class="search-result">
+      <div class="result-header">
+        <span class="result-favicon blue">W</span>
+        <span class="result-meta">위키백과 한국어 · ko.wikipedia.org › wiki › 돌림판</span>
+        <span class="result-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>
+      <span class="result-title"><strong>돌림판</strong> - 위키백과 한국어</span>
+      <p class="result-desc"><strong>돌림판</strong>은 도자기를 만들 때, 흙을 빚거나 무늬를 넣는 데 사용하는 기구이다. 물레판이라고도 하며, 회전하는 원판 위에서 도자기를 성형한다.</p>
+      <span class="result-tag">외부 링크</span>
+    </article>
+
+    <article class="search-result">
+      <div class="result-header">
+        <span class="result-favicon orange">E</span>
+        <span class="result-meta">엔트리 · playentry.org › project</span>
+        <span class="result-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>
+      <span class="result-title">작품 - 돌려돌려 <strong>돌림판</strong></span>
+      <div class="result-body">
+        <p class="result-desc"><span class="result-date">2022.09.17.</span> 돌려돌려 <strong>돌림판</strong>! 무엇을 먼저 할지, 누가 먼저 할지 고르기 어려울 때 쓸 수 있는 도구입니다. 항목을 입력하고 돌려서 결과를 확인하세요.</p>
+        <div class="result-thumb" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="28" fill="#fff" stroke="#ccc" stroke-width="2"/>
+            <path d="M32 4 A28 28 0 0 1 60 32 L32 32 Z" fill="#f5a060"/>
+            <path d="M60 32 A28 28 0 0 1 32 60 L32 32 Z" fill="#f08080"/>
+            <path d="M32 60 A28 28 0 0 1 4 32 L32 32 Z" fill="#c090e0"/>
+            <path d="M4 32 A28 28 0 0 1 32 4 L32 32 Z" fill="#80b8f0"/>
+            <circle cx="32" cy="32" r="4" fill="#333"/>
+          </svg>
+        </div>
+      </div>
+    </article>
+
+    <article class="search-result">
+      <div class="result-header">
+        <span class="result-favicon purple">B</span>
+        <span class="result-meta">네이버 블로그 · blog.naver.com › myblog123</span>
+        <span class="result-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+      </div>
+      <span class="result-title">추첨용 <strong>돌림판</strong> 직접 만들어 써봤어요 (후기)</span>
+      <p class="result-desc">회식 때 메뉴 고르기, 당첨자 뽑기에 <strong>돌림판</strong>이 정말 유용했어요. 옵션 개수도 자유롭게 바꿀 수 있고 모바일에서도 잘 돌아가서 추천합니다.</p>
+    </article>
+  </section>
+  </div>
+
+  <p class="ios-hint" id="iosHint">
+    ⚠️ 상단에 <strong>「완료」</strong>가 보이면 미리보기입니다. 기능이 작동하지 않아요.<br>
+    <strong>공유(↑)</strong> → <strong>Safari에서 열기</strong>로 실행해주세요.
+  </p>
+
+  <script>
+  window.SpinWheel = {};
+
+  function initSpinningWheel() {
+    const COLORS = [
+      '#e8b06d', '#e8a2a2', '#b2a2e8', '#a2c2e8',
+      '#b2e8a2', '#f4d96f', '#e8b06d', '#e8a2a2'
+    ];
+    const RED_COLOR = '#e8a2a2';
+    const MIN = 2;
+    const MAX = 8;
+
+    let segmentCount = 6;
+    let options = [];
+    let currentRotation = 0;
+    let isSpinning = false;
+    let isSetupMode = true;
+    let spinTargetIndex = 0;
+    let spinTargetRotation = 0;
+
+    const iosHint = document.getElementById('iosHint');
+    const jsBlockedBanner = document.getElementById('jsBlockedBanner');
+
+    const canvas = document.getElementById('wheelCanvas');
+    if (!canvas) {
+      if (iosHint) iosHint.classList.remove('hidden');
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      if (iosHint) iosHint.classList.remove('hidden');
+      return;
+    }
+
+    const gameArea = document.getElementById('gameArea');
+    const wheelContainer = document.getElementById('wheelContainer');
+    const inputsOverlay = document.getElementById('inputsOverlay');
+    const countDisplay = document.getElementById('countDisplay');
+    const filledCountEl = document.getElementById('filledCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const btnSpin = document.getElementById('btnSpin');
+    const btnReset = document.getElementById('btnReset');
+    const btnConfirm = document.getElementById('btnConfirm');
+    const wheelResult = document.getElementById('wheelResult');
+    const wheelFallback = document.getElementById('wheelFallback');
+    var canvasLogicalSize = 280;
+
+    function fitCanvas() {
+      var rect = wheelContainer.getBoundingClientRect();
+      var size = Math.floor(rect.width) || 280;
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(size * dpr);
+      canvas.height = Math.floor(size * dpr);
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvasLogicalSize = size;
+      return size;
+    }
+
+    function initOptions(count) {
+      var prev = options.slice();
+      options = [];
+      for (var i = 0; i < count; i++) {
+        options.push(prev[i] || '');
+      }
+    }
+
+    function getFilledCount() {
+      return options.filter(o => o.trim().length > 0).length;
+    }
+
+    function updateCounter() {
+      const filled = getFilledCount();
+      filledCountEl.textContent = filled;
+      totalCountEl.textContent = segmentCount;
+      countDisplay.textContent = segmentCount + '개';
+      btnMinus.disabled = segmentCount <= MIN || !isSetupMode;
+      btnPlus.disabled = segmentCount >= MAX || !isSetupMode;
+      btnConfirm.classList.toggle('show', isSetupMode && filled === segmentCount && !isSpinning);
+    }
+
+    function setSetupMode(setup) {
+      isSetupMode = setup;
+      gameArea.classList.toggle('setup', setup);
+      gameArea.classList.toggle('result', !setup);
+      setInputsVisible(setup);
+      if (setup) clearResult();
+      updateCounter();
+    }
+
+    const SPIN_HINT = '원판을 아래로 터치하여 돌려주세요!';
+
+    function showSpinHint() {
+      wheelResult.textContent = SPIN_HINT;
+      wheelResult.classList.add('is-hint');
+    }
+
+    function showResult(text) {
+      wheelResult.classList.remove('is-hint');
+      wheelResult.textContent = '"' + text + '"';
+    }
+
+    function clearResult() {
+      wheelResult.textContent = '';
+      wheelResult.classList.remove('is-hint');
+    }
+
+    function setInputsVisible(visible) {
+      inputsOverlay.classList.toggle('hidden', !visible);
+    }
+
+    function toRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function drawWheel(rotationDeg) {
+      var size = canvasLogicalSize;
+      var cx = size / 2;
+      var cy = size / 2;
+      var outerR = size / 2;
+      const borderW = 7;
+      const fillR = outerR;
+      const slice = (2 * Math.PI) / segmentCount;
+
+      ctx.clearRect(0, 0, size, size);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.translate(cx, cy);
+      ctx.rotate(toRad(rotationDeg));
+
+      for (let i = 0; i < segmentCount; i++) {
+        const start = i * slice - Math.PI / 2 - 0.002;
+        const end = start + slice + 0.004;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, fillR, start, end);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = '#5c3d2e';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < segmentCount; i++) {
+        const angle = i * slice - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * fillR, Math.sin(angle) * fillR);
+        ctx.stroke();
+      }
+
+      if (inputsOverlay.classList.contains('hidden')) {
+        const labelR = fillR * 0.62;
+        for (let i = 0; i < segmentCount; i++) {
+          const start = i * slice - Math.PI / 2;
+          const label = (options[i] || '').trim() || ('옵션' + (i + 1));
+          const midAngle = start + slice / 2;
+          const fontSize = Math.max(14, Math.min(24, 200 / segmentCount));
+          ctx.save();
+          ctx.rotate(midAngle);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#222';
+          ctx.font = '700 ' + fontSize + 'px -apple-system, "Malgun Gothic", sans-serif';
+          ctx.fillText(label, labelR, 0);
+          ctx.restore();
+        }
+      }
+
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR - borderW / 2, 0, Math.PI * 2);
+      ctx.strokeStyle = '#5c3d2e';
+      ctx.lineWidth = borderW;
+      ctx.stroke();
+    }
+
+    function getWheelSize() {
+      var rect = wheelContainer.getBoundingClientRect();
+      return rect.width || wheelContainer.offsetWidth || canvasLogicalSize || 280;
+    }
+
+    function positionInputs() {
+      inputsOverlay.innerHTML = '';
+      var size = getWheelSize();
+      var cx = size / 2;
+      var cy = size / 2;
+      const inputRadius = size * 0.32;
+      const slice = (2 * Math.PI) / segmentCount;
+
+      for (let i = 0; i < segmentCount; i++) {
+        const angle = i * slice + slice / 2 - Math.PI / 2 + toRad(currentRotation);
+        const x = cx + Math.cos(angle) * inputRadius;
+        const y = cy + Math.sin(angle) * inputRadius;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'segment-input-wrap';
+        wrap.style.left = x + 'px';
+        wrap.style.top = y + 'px';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'segment-input';
+        input.placeholder = '옵션' + (i + 1);
+        input.value = options[i] || '';
+        input.maxLength = 20;
+        input.dataset.index = i;
+
+        input.addEventListener('input', (e) => {
+          options[i] = e.target.value;
+          updateCounter();
+        });
+
+        function stopBubble(e) { e.stopPropagation(); }
+
+        input.addEventListener('click', stopBubble);
+        input.addEventListener('mousedown', stopBubble);
+        input.addEventListener('touchstart', stopBubble);
+        input.addEventListener('touchend', stopBubble);
+
+        wrap.appendChild(input);
+        inputsOverlay.appendChild(wrap);
+      }
+    }
+
+    function render() {
+      fitCanvas();
+      drawWheel(currentRotation);
+      positionInputs();
+      updateCounter();
+      if (wheelFallback) wheelFallback.classList.add('hidden');
+      if (iosHint) iosHint.classList.add('hidden');
+      if (jsBlockedBanner) jsBlockedBanner.classList.add('hidden');
+    }
+
+    function setSegmentCount(count) {
+      segmentCount = Math.max(MIN, Math.min(MAX, count));
+      initOptions(segmentCount);
+      render();
+    }
+
+    function getWinnerIndex() {
+      const slice = 360 / segmentCount;
+      const normalized = ((currentRotation % 360) + 360) % 360;
+      const index = Math.floor(((360 - normalized - slice / 2 + 360) % 360) / slice) % segmentCount;
+      return index;
+    }
+
+    function getRedSegmentIndices() {
+      const indices = [];
+      for (let i = 0; i < segmentCount; i++) {
+        if (COLORS[i % COLORS.length] === RED_COLOR) indices.push(i);
+      }
+      return indices.length ? indices : [0];
+    }
+
+    function getRotationForIndex(index, jitterScale) {
+      const slice = 360 / segmentCount;
+      const jitter = (Math.random() - 0.5) * slice * (jitterScale || 0.25);
+      return ((360 - index * slice - slice / 2 + jitter) % 360 + 360) % 360;
+    }
+
+    function pickRedTargetIndex() {
+      const redIndices = getRedSegmentIndices();
+      return redIndices[Math.floor(Math.random() * redIndices.length)];
+    }
+
+    function calcSpinPlan(startRotation) {
+      spinTargetIndex = pickRedTargetIndex();
+      spinTargetRotation = getRotationForIndex(spinTargetIndex);
+
+      const extraTurns = 5 + Math.floor(Math.random() * 4);
+      const startNormalized = ((startRotation % 360) + 360) % 360;
+      let delta = spinTargetRotation - startNormalized;
+      if (delta < 90) delta += 360;
+
+      return {
+        targetRotation: startRotation + extraTurns * 360 + delta,
+        duration: 4000 + Math.random() * 1500
+      };
+    }
+
+    function finishSpin() {
+      spinTargetRotation = getRotationForIndex(spinTargetIndex, 0.1);
+      currentRotation = spinTargetRotation;
+      drawWheel(currentRotation);
+
+      const winnerIdx = getWinnerIndex();
+      if (winnerIdx !== spinTargetIndex) {
+        spinTargetIndex = pickRedTargetIndex();
+        spinTargetRotation = getRotationForIndex(spinTargetIndex, 0.1);
+        currentRotation = spinTargetRotation;
+        drawWheel(currentRotation);
+      }
+
+      isSpinning = false;
+      wheelContainer.classList.remove('spinning');
+      btnSpin.disabled = false;
+      btnReset.disabled = false;
+      setInputsVisible(false);
+      setSetupMode(false);
+
+      const finalIdx = getWinnerIndex();
+      const winnerText = options[finalIdx].trim() || ('옵션' + (finalIdx + 1));
+      showResult(winnerText);
+      updateCounter();
+    }
+
+    function spin() {
+      if (isSpinning) return;
+
+      const filled = getFilledCount();
+      if (filled < segmentCount) {
+        alert('모든 옵션을 입력해주세요. (' + filled + '/' + segmentCount + '개 입력됨)');
+        return;
+      }
+
+      isSpinning = true;
+      wheelContainer.classList.add('spinning');
+      btnSpin.disabled = true;
+      btnReset.disabled = true;
+      btnConfirm.classList.remove('show');
+      setInputsVisible(false);
+      updateCounter();
+
+      if (!isSetupMode) {
+        showSpinHint();
+      }
+
+      const startRotation = currentRotation;
+      const plan = calcSpinPlan(startRotation);
+      const targetRotation = plan.targetRotation;
+      const duration = plan.duration;
+      const startTime = performance.now();
+
+      function easeOut(t) {
+        return 1 - Math.pow(1 - t, 4);
+      }
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOut(progress);
+
+        currentRotation = startRotation + (targetRotation - startRotation) * eased;
+        drawWheel(currentRotation);
+        positionInputs();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          finishSpin();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function bindButton(el, handler) {
+      if (!el) return;
+      var lastTap = 0;
+      function run(e) {
+        if (e && e.type === 'touchend' && e.cancelable) e.preventDefault();
+        var now = Date.now();
+        if (now - lastTap < 400) return;
+        lastTap = now;
+        handler(e);
+      }
+      el.addEventListener('click', run, false);
+      el.addEventListener('touchend', run, { passive: false });
+    }
+
+    window.SpinWheel = {
+      minus: function () { if (!isSpinning) setSegmentCount(segmentCount - 1); },
+      plus: function () { if (!isSpinning) setSegmentCount(segmentCount + 1); },
+      spin: spin,
+      reset: function () {
+        if (isSpinning) return;
+        options = [];
+        for (var r = 0; r < segmentCount; r++) options.push('');
+        currentRotation = 0;
+        setSetupMode(true);
+        render();
+      },
+      tapWheel: function () {
+        if (!isSetupMode) spin();
+      }
+    };
+
+    bindButton(btnMinus, function () { window.SpinWheel.minus(); });
+    bindButton(btnPlus, function () { window.SpinWheel.plus(); });
+    bindButton(btnSpin, spin);
+    bindButton(btnConfirm, spin);
+    bindButton(btnReset, function () { window.SpinWheel.reset(); });
+    bindButton(wheelContainer, function () { window.SpinWheel.tapWheel(); });
+
+    window.addEventListener('resize', function () {
+      if (!isSpinning) render();
+    });
+
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { if (!isSpinning) render(); }, 300);
+    });
+
+    initOptions(segmentCount);
+    setSetupMode(true);
+    render();
+    setTimeout(render, 200);
+    setTimeout(render, 600);
+  }
+
+  try {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSpinningWheel);
+    } else {
+      initSpinningWheel();
+    }
+  } catch (err) {
+    var hint = document.getElementById('iosHint');
+    if (hint) {
+      hint.textContent = '오류: Safari에서 열어주세요. (' + err.message + ')';
+      hint.classList.remove('hidden');
+    }
+  }
+  </script>
+</body>
+</html>
